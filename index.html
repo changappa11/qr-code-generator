@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
-        /* Basic reset and styling for a modern look */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -24,10 +24,7 @@
             max-width: 400px;
             width: 90%;
         }
-        h2 {
-            margin-top: 0;
-            color: #333;
-        }
+        h2 { margin-top: 0; color: #333; }
         input[type="text"] {
             width: calc(100% - 22px);
             padding: 10px;
@@ -36,7 +33,7 @@
             border-radius: 5px;
             font-size: 16px;
         }
-        button {
+        .btn {
             background-color: #007bff;
             color: white;
             border: none;
@@ -46,15 +43,23 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             width: 100%;
+            margin-bottom: 10px;
         }
-        button:hover {
-            background-color: #0056b3;
+        .btn:hover { background-color: #0056b3; }
+        
+        /* Specific styling for the download button */
+        .btn-download {
+            background-color: #28a745;
+            margin-top: 15px;
         }
+        .btn-download:hover { background-color: #218838; }
+
         #qr-box {
             margin-top: 25px;
-            display: none; /* Hidden until a code is generated */
+            display: none; /* Hidden until generated */
         }
-        #qr-box img {
+        /* We style the canvas exactly like we styled the image previously */
+        canvas {
             max-width: 100%;
             border: 1px solid #eee;
             border-radius: 5px;
@@ -68,35 +73,57 @@
     <div class="container">
         <h2>QR Code Generator</h2>
         <input type="text" id="qr-input" placeholder="Enter a URL or text...">
-        <button onclick="generateQRCode()">Generate QR Code</button>
+        
+        <button class="btn" onclick="generateQRCode()">Generate QR Code</button>
         
         <div id="qr-box">
-            <img id="qr-image" src="" alt="Generated QR Code">
+            <canvas id="qr-canvas"></canvas>
+            
+            <button class="btn btn-download" onclick="downloadQRCode()">Download as PNG</button>
         </div>
     </div>
 
     <script>
+        // We declare this outside the function so the download function can access it if needed
+        let qr; 
+
         function generateQRCode() {
-            // 1. Get the value from the input field
             const inputValue = document.getElementById('qr-input').value;
             const qrBox = document.getElementById('qr-box');
-            const qrImage = document.getElementById('qr-image');
 
-            // 2. Validate that the input is not empty
             if (inputValue.trim() === '') {
                 alert('Please enter some text or a valid URL first!');
                 return;
             }
 
-            // 3. Encode the input so it's safe to pass in a URL
-            const encodedData = encodeURIComponent(inputValue);
+            // Tell the QRious library to draw the code on our canvas
+            qr = new QRious({
+                element: document.getElementById('qr-canvas'),
+                value: inputValue,
+                size: 250 // Sets the resolution of the generated image
+            });
 
-            // 4. Call the free QR Code API with the encoded data
-            const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedData}`;
-            
-            // 5. Update the image source and make it visible
-            qrImage.src = apiUrl;
+            // Make the QR code and download button visible
             qrBox.style.display = 'block';
+        }
+
+        function downloadQRCode() {
+            const canvas = document.getElementById('qr-canvas');
+            
+            // Convert the canvas drawing into a standard PNG image data URL
+            const imageUrl = canvas.toDataURL("image/png");
+
+            // Create a temporary invisible hyperlink
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageUrl;
+            
+            // The 'download' attribute tells the browser to save the file rather than open it
+            downloadLink.download = 'generated-qr-code.png'; 
+            
+            // Append the link to the page, click it programmatically, and remove it
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
     </script>
 
