@@ -47,7 +47,6 @@
         }
         .btn:hover { background-color: #0056b3; }
         
-        /* Specific styling for the download button */
         .btn-download {
             background-color: #28a745;
             margin-top: 15px;
@@ -58,13 +57,27 @@
             margin-top: 25px;
             display: none; /* Hidden until generated */
         }
-        /* We style the canvas exactly like we styled the image previously */
         canvas {
             max-width: 100%;
             border: 1px solid #eee;
             border-radius: 5px;
             padding: 10px;
             background-color: #fff;
+        }
+
+        /* NEW: Styling for the visitor counter section */
+        .counter-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .counter-section img {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -78,13 +91,16 @@
         
         <div id="qr-box">
             <canvas id="qr-canvas"></canvas>
-            
             <button class="btn btn-download" onclick="downloadQRCode()">Download as PNG</button>
+        </div>
+
+        <div class="counter-section">
+            <span>Total Page Visitors</span>
+            <img src="https://hits.sh/git-set-deployer.netlify.app/qr-generator.svg?color=007bff" alt="Visitor Counter">
         </div>
     </div>
 
     <script>
-        // We declare this outside the function so the download function can access it if needed
         let qr; 
 
         function generateQRCode() {
@@ -96,31 +112,23 @@
                 return;
             }
 
-            // Tell the QRious library to draw the code on our canvas
             qr = new QRious({
                 element: document.getElementById('qr-canvas'),
                 value: inputValue,
-                size: 250 // Sets the resolution of the generated image
+                size: 250
             });
 
-            // Make the QR code and download button visible
             qrBox.style.display = 'block';
         }
 
         function downloadQRCode() {
             const canvas = document.getElementById('qr-canvas');
-            
-            // Convert the canvas drawing into a standard PNG image data URL
             const imageUrl = canvas.toDataURL("image/png");
 
-            // Create a temporary invisible hyperlink
             const downloadLink = document.createElement('a');
             downloadLink.href = imageUrl;
-            
-            // The 'download' attribute tells the browser to save the file rather than open it
             downloadLink.download = 'generated-qr-code.png'; 
             
-            // Append the link to the page, click it programmatically, and remove it
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
